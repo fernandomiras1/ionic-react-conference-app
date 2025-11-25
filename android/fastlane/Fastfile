@@ -1,0 +1,159 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:android)
+
+platform :android do
+  desc "Runs all the tests"
+  lane :test do
+    gradle(task: "test")
+  end
+
+  desc "Build debug APK"
+  lane :build_debug do
+    gradle(task: "clean assembleDebug")
+  end
+
+  desc "Build release APK"
+  lane :build_release do
+    gradle(task: "clean assembleRelease")
+  end
+
+  desc "Build Android App Bundle (AAB) for release"
+  lane :build_aab do
+    gradle(task: "clean bundleRelease")
+  end
+
+  desc "Deploy a new version to the Google Play Internal Testing"
+  lane :internal do
+    gradle(task: "clean bundleRelease")
+    upload_to_play_store(
+      track: 'internal',
+      release_status: 'draft',
+      skip_upload_apk: true,
+      json_key: ENV['ANDROID_JSON_KEY_FILE'],
+      package_name: ENV['ANDROID_PACKAGE_NAME']
+    )
+    
+    # Send notification to Slack (optional)
+    if ENV['SLACK_URL']
+      slack(
+        slack_url: ENV['SLACK_URL'],
+        message: "Successfully uploaded a new internal testing build! 🧪",
+        channel: "#releases"
+      )
+    end
+  end
+
+  desc "Deploy a new version to the Google Play Alpha track"
+  lane :alpha do
+    gradle(task: "clean bundleRelease")
+    upload_to_play_store(
+      track: 'alpha',
+      release_status: 'draft',
+      skip_upload_apk: true,
+      json_key: ENV['ANDROID_JSON_KEY_FILE'],
+      package_name: ENV['ANDROID_PACKAGE_NAME']
+    )
+    
+    # Send notification to Slack (optional)
+    if ENV['SLACK_URL']
+      slack(
+        slack_url: ENV['SLACK_URL'],
+        message: "Successfully uploaded a new alpha build! 🔍",
+        channel: "#releases"
+      )
+    end
+  end
+
+  desc "Deploy a new version to the Google Play Beta track"
+  lane :beta do
+    gradle(task: "clean bundleRelease")
+    upload_to_play_store(
+      track: 'beta',
+      release_status: 'draft',
+      skip_upload_apk: true,
+      json_key: ENV['ANDROID_JSON_KEY_FILE'],
+      package_name: ENV['ANDROID_PACKAGE_NAME']
+    )
+    
+    # Send notification to Slack (optional)
+    if ENV['SLACK_URL']
+      slack(
+        slack_url: ENV['SLACK_URL'],
+        message: "Successfully uploaded a new beta build! 🚀",
+        channel: "#releases"
+      )
+    end
+  end
+
+  desc "Deploy a new version to the Google Play Production"
+  lane :production do
+    gradle(task: "clean bundleRelease")
+    upload_to_play_store(
+      track: 'production',
+      release_status: 'draft',
+      skip_upload_apk: true,
+      json_key: ENV['ANDROID_JSON_KEY_FILE'],
+      package_name: ENV['ANDROID_PACKAGE_NAME']
+    )
+    
+    # Send notification to Slack (optional)
+    if ENV['SLACK_URL']
+      slack(
+        slack_url: ENV['SLACK_URL'],
+        message: "Successfully uploaded a new production build! 🎉",
+        channel: "#releases"
+      )
+    end
+  end
+
+  desc "Submit a new Beta Build to Firebase App Distribution"
+  lane :firebase do
+    gradle(task: "clean assembleRelease")
+    
+    # Upload to Firebase App Distribution
+    firebase_app_distribution(
+      app: ENV['FIREBASE_APP_ID'],
+      groups: "testers",
+      release_notes: "Bug fixes and improvements",
+      firebase_cli_token: ENV['FIREBASE_TOKEN']
+    )
+    
+    # Send notification to Slack (optional)
+    if ENV['SLACK_URL']
+      slack(
+        slack_url: ENV['SLACK_URL'],
+        message: "Successfully uploaded a new build to Firebase App Distribution! 🔥",
+        channel: "#releases"
+      )
+    end
+  end
+
+  error do |lane, exception|
+    # Handle errors here
+    puts "Error occurred: #{exception}"
+    
+    # Send error notification to Slack (optional)
+    if ENV['SLACK_URL']
+      slack(
+        slack_url: ENV['SLACK_URL'],
+        message: "Something went wrong with the Android deployment: #{exception}",
+        success: false,
+        channel: "#releases"
+      )
+    end
+  end
+end

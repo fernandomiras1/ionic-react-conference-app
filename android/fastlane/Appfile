@@ -1,0 +1,5 @@
+json_key_file(ENV['ANDROID_JSON_KEY_FILE'] || "path/to/your/google-play-api-key.json") # Path to the json secret file
+package_name(ENV['ANDROID_PACKAGE_NAME'] || "com.fernandomiras.ionicconference") # e.g. com.krausefx.app
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile

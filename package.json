@@ -36,7 +36,16 @@
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,md}\"",
     "precommit": "npm run format && lint-staged",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "build:ios": "npm run build && npx cap sync ios && npx cap build ios",
+    "build:android": "npm run build && npx cap sync android && npx cap build android",
+    "deploy:ios:beta": "npm run build:ios && cd ios/App && fastlane beta",
+    "deploy:ios:release": "npm run build:ios && cd ios/App && fastlane release",
+    "deploy:android:beta": "npm run build:android && cd android && fastlane beta",
+    "deploy:android:release": "npm run build:android && cd android && fastlane production",
+    "deploy:android:internal": "npm run build:android && cd android && fastlane internal",
+    "fastlane:ios:setup": "cd ios/App && fastlane match development && fastlane match appstore",
+    "fastlane:android:setup": "cd android && fastlane supply init"
   },
   "eslintConfig": {
     "extends": "react-app"
