@@ -6,9 +6,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-env:
-  BUNDLE_GEMFILE: ios/App/Gemfile
-
 jobs:
   build:
     runs-on: macos-14
@@ -37,6 +34,7 @@ jobs:
         with:
           ruby-version: '3.3'
           bundler-cache: true
+          working-directory: ios/App
 
       - name: Install CocoaPods dependencies
         working-directory: ios/App
