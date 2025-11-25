@@ -1,4 +1,4 @@
-name: iOS Fastlane
+name: iOS Fastlane Build
 
 on:
   push:
@@ -19,16 +19,33 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: '20'
+          cache: 'npm'
           cache-dependency-path: package-lock.json
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Sync Capacitor
+        run: npx cap sync ios
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.3"
+          ruby-version: '3.3'
           bundler-cache: true
 
-      - name: Run fastlane
+      - name: Install CocoaPods dependencies
         working-directory: ios/App
-        run: bundle exec fastlane ios ci_build
+        run: bundle exec pod install
+
+      - name: Build iOS app
+        working-directory: ios/App
+        env:
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          FASTLANE_APP_IDENTIFIER: ${{ secrets.FASTLANE_APP_IDENTIFIER }}
+        run: bundle exec fastlane build
