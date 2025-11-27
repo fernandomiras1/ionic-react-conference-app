@@ -32,7 +32,6 @@ jobs:
         working-directory: ios/App
         run: |
           gem install bundler
-          bundle config set --local path 'vendor/bundle'
           bundle install
 
       - name: Install Node dependencies
@@ -43,6 +42,11 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync ios
+
+      - name: Setup CocoaPods
+        run: |
+          cd ios/App
+          bundle exec pod install
 
       - name: Build iOS app
         continue-on-error: true
