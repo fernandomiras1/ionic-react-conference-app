@@ -28,11 +28,15 @@ platform :ios do
   desc "Build app for development"
   lane :build do
     # Ensure we have the latest provisioning profiles
-    match(
-      type: "development",
-      git_url: ENV['MATCH_GIT_URL'],
-      app_identifier: ENV['FASTLANE_APP_IDENTIFIER']
-    )
+    if ENV['MATCH_GIT_URL'] && !ENV['MATCH_GIT_URL'].empty?
+      match(
+        type: "development",
+        git_url: ENV['MATCH_GIT_URL'],
+        app_identifier: ENV['FASTLANE_APP_IDENTIFIER']
+      )
+    else
+      UI.important("⚠️  MATCH_GIT_URL not configured, skipping code signing")
+    end
     
     # Build the app
     gym(
@@ -44,6 +48,15 @@ platform :ios do
 
   desc "Build and upload to TestFlight for Beta Testing"
   lane :beta do
+    # Check if required secrets are configured
+    unless ENV['MATCH_GIT_URL'] && !ENV['MATCH_GIT_URL'].empty?
+      UI.user_error!("❌ MATCH_GIT_URL not configured. Please see SECRETS_SETUP.md")
+    end
+    
+    unless ENV['FASTLANE_APPLE_ID'] && !ENV['FASTLANE_APPLE_ID'].empty?
+      UI.user_error!("❌ FASTLANE_APPLE_ID not configured. Please see SECRETS_SETUP.md")
+    end
+    
     # Increment build number
     increment_build_number(xcodeproj: "App.xcodeproj")
     
@@ -82,6 +95,11 @@ platform :ios do
 
   desc "Deploy a new version to the App Store"
   lane :release do
+    # Check if required secrets are configured
+    unless ENV['MATCH_GIT_URL'] && !ENV['MATCH_GIT_URL'].empty?
+      UI.user_error!("❌ MATCH_GIT_URL not configured. Please see SECRETS_SETUP.md")
+    end
+    
     # Ensure we have the correct provisioning profiles
     match(
       type: "appstore",
@@ -119,6 +137,10 @@ platform :ios do
 
   desc "Refresh provisioning profiles"
   lane :refresh_profiles do
+    unless ENV['MATCH_GIT_URL'] && !ENV['MATCH_GIT_URL'].empty?
+      UI.user_error!("❌ MATCH_GIT_URL not configured. Please see SECRETS_SETUP.md")
+    end
+    
     match(
       type: "development", 
       force_for_new_devices: true,
