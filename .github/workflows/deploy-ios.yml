@@ -26,14 +26,8 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
-          bundler-cache: false
+          bundler-cache: true
           working-directory: ios/App
-
-      - name: Install Fastlane
-        working-directory: ios/App
-        run: |
-          gem install bundler
-          bundle install
 
       - name: Install Node dependencies
         run: npm ci
