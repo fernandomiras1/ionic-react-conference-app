@@ -24,8 +24,14 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
-          bundler-cache: true
-          working-directory: android
+          bundler-cache: false
+
+      - name: Install Fastlane
+        working-directory: android
+        run: |
+          gem install bundler
+          bundle config set --local path 'vendor/bundle'
+          bundle install
 
       - name: Setup Java
         uses: actions/setup-java@v4

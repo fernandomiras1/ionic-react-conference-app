@@ -26,8 +26,14 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
-          bundler-cache: true
-          working-directory: ios/App
+          bundler-cache: false
+
+      - name: Install Fastlane and CocoaPods
+        working-directory: ios/App
+        run: |
+          gem install bundler
+          bundle config set --local path 'vendor/bundle'
+          bundle install
 
       - name: Install Node dependencies
         run: npm ci
@@ -37,11 +43,6 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync ios
-
-      - name: Setup CocoaPods
-        run: |
-          cd ios/App
-          bundle exec pod install
 
       - name: Build iOS app
         continue-on-error: true
