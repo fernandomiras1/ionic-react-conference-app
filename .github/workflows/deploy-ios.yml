@@ -19,13 +19,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: '3.3'
           bundler-cache: true
           working-directory: ios/App
 
@@ -44,6 +44,7 @@ jobs:
           bundle exec pod install
 
       - name: Import Code Signing Certificates
+        if: ${{ secrets.MATCH_GIT_URL != '' }}
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
@@ -55,7 +56,22 @@ jobs:
           cd ios/App
           bundle exec fastlane match appstore --readonly
 
+      - name: Build iOS app (without signing for testing)
+        if: ${{ secrets.MATCH_GIT_URL == '' }}
+        working-directory: ios/App
+        run: |
+          echo "⚠️ Skipping code signing - MATCH_GIT_URL not configured"
+          echo "Building for simulator only"
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -sdk iphonesimulator \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
       - name: Deploy to TestFlight
+        if: ${{ secrets.MATCH_GIT_URL != '' && secrets.FASTLANE_APPLE_ID != '' }}
         env:
           FASTLANE_APPLE_ID: ${{ secrets.FASTLANE_APPLE_ID }}
           FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
