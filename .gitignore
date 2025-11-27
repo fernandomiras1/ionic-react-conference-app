@@ -81,3 +81,8 @@ yarn-debug.log*
 yarn-error.log*
 
 .stencil/
+
+# Fastlane - Ignore Gemfile.lock to let CI generate with correct Bundler version
+ios/App/Gemfile.lock
+android/Gemfile.lock
+**/vendor/bundle
